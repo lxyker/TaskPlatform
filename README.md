@@ -19,20 +19,19 @@ django-redis
 
 - 用户注册/登录：
 
-![](images/maximal-readme/注册.png)
+![](web/static/image/readme/登录.png)
 
 - 项目管理：
-
-  <img src="images/maximal-readme/项目.png"  />
+![](web/static/image/readme/项目.png)
 
 - 文件管理：
 
-  ![](images/maximal-readme/文件管理.png)
+  ![](web/static/image/readme/文件管理.png)
 
 - 任务追踪：
 
-  ![](images/maximal-readme/问题追踪.png)
+  ![](web/static/image/readme/问题追踪.png)
 
 - 价格购买
 
-  ![image-20200512230259041](images/maximal-readme/image-20200512230259041.png)
+  ![](web/static/image/readme/购买.png)
