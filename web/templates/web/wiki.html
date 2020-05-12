@@ -1,0 +1,134 @@
+{% extends 'layout/manage.html' %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'plugins/editor.md-master/css/editormd.preview.min.css' %}">
+    <style>
+        .panel-default .panel-heading {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .panel-body {
+            padding: 0;
+        }
+
+        .title-list {
+            border-right: 1px solid #dddddd;
+            min-height: 500px;
+        }
+
+        .title-list ul {
+            padding-left: 15px;
+        }
+
+        .title-list ul a {
+            display: block;
+            padding: 5px 0;
+        }
+
+        .content {
+            border-left: 1px solid #dddddd;
+            min-height: 600px;
+            margin-left: -1px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div><i class="fa fa-book" aria-hidden="true"></i>wiki文档</div>
+                <div class="function">
+                    <a type="button" class="btn btn-success btn-xs"
+                       href="{% url 'wiki_add' project_id=request.lxyker.project.id %}">
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i>新建
+                    </a>
+                    {% if wiki_obj %}
+                        <a type="button" class="btn btn-primary btn-xs"
+                           href="{% url 'wiki_edit' project_id=request.lxyker.project.id wiki_id=wiki_obj.id %}">
+                            <i class="fa fa-edit" aria-hidden="true"></i>编辑
+                        </a>
+                        <a type="button" class="btn btn-danger btn-xs"
+                           href="{% url 'wiki_delete' project_id=request.lxyker.project.id wiki_id=wiki_obj.id %}">
+                            <i class="fa fa-trash" aria-hidden="true"></i>删除
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="col-sm-3 title-list">
+                    <ul id="catalog"></ul>
+                </div>
+                <div class="col-sm-9 content">
+                    {% if wiki_obj %}
+                        <div id="previewMarkdown">
+                            <textarea name="" id="" cols="30" rows="10">
+                                {{ wiki_obj.content }}
+                            </textarea>
+                        </div>
+                    {% else %}
+                        <div style="text-align: center">
+                            <h4>《{{ request.lxyker.project.name }}》wiki文档库</h4>
+                            <a href="{% url 'wiki_add' project_id=request.lxyker.project.id %}">
+                                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                新建文章
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'plugins/editor.md-master/editormd.min.js' %}"></script>
+    <script src="{% static 'plugins/editor.md-master/lib/marked.min.js' %}"></script>
+    <script src="{% static 'plugins/editor.md-master/lib/prettify.min.js' %}"></script>
+    <script src="{% static 'plugins/editor.md-master/lib/raphael.min.js' %}"></script>
+    <script src="{% static 'plugins/editor.md-master/lib/underscore.min.js' %}"></script>
+    <script src="{% static 'plugins/editor.md-master/lib/sequence-diagram.min.js' %}"></script>
+    <script src="{% static 'plugins/editor.md-master/lib/flowchart.min.js' %}"></script>
+    <script src="{% static 'plugins/editor.md-master/lib/jquery.flowchart.min.js' %}"></script>
+
+    <script>
+
+        var WIKI_DETAIL_URL = '{% url 'wiki' project_id=request.lxyker.project.id %}';
+
+        $(function () {
+            initCatalog();
+            initPreviewMarkdonw();
+        });
+
+        function initCatalog() {
+            $.ajax({
+                url: '{% url 'wiki_catalog' project_id=request.lxyker.project.id %}',
+                type: 'GET',
+                dataType: 'JSON',
+                success: function (res) {
+                    if (res.status) {
+                        $.each(res.data, function (index, item) {
+                            var href = WIKI_DETAIL_URL + '?wiki_id=' + item.id;
+                            var li = $('<li>').attr('id', 'id_' + item.id).append($('<a>').text(item.title).attr('href', href)).append($('<ul>'));
+                            if (!item.parent_id) {
+                                $('#catalog').append(li);
+                            } else {
+                                $('#id_' + item.parent_id).children('ul').append(li);
+                            }
+                        })
+                    } else {
+                        alert('初始化目录失败');
+                    }
+                }
+            })
+        }
+        function initPreviewMarkdonw() {
+            editormd.markdownToHTML('previewMarkdown', {
+                htmlDecode: 'style, script, iframe'
+            });
+        }
+    </script>
+{% endblock %}

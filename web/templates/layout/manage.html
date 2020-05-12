@@ -1,0 +1,69 @@
+{% load static %}
+{% load project %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.3.7-dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+    <style>
+        .navbar-av {
+            border-radius: 0;
+        }
+
+        .error-msg {
+            color: red;
+            position: absolute;
+            font-size: 13px;
+        }
+    </style>
+    {% block css %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <a class="navbar-brand" href="{% url 'project_list' %}">lxyker</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+            <ul class="nav navbar-nav">
+                {% all_project_list request %}
+
+                {% if request.lxyker.project %}
+                    {% manage_menu_list request %}
+                {% endif %}
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">待开发…</a></li>
+                <li><a href="#"><i class="fa fa-thermometer-half" aria-hidden="true"></i></a></li>
+                <li><a href="#"><i class="fa fa-american-sign-language-interpreting" aria-hidden="true"></i></a></li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">{{ request.lxyker.user.username }}<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'index' %}">主页</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{% url 'logout' %}">退出登录</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+
+{% block content %}{% endblock %}
+
+<script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-3.3.7-dist/js/bootstrap.min.js' %}"></script>
+{% block js %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+{% extends 'layout/basic.html' %}
+
+{% load static %}
+
+{% block title %}
+    用户注册
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/account.css' %}">
+    <style>
+        .error-msg {
+            color: red;
+            position: absolute;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="account">
+        <div class="title">用户注册</div>
+        <form id="regForm" method="POST" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                {% if field.name == 'code' %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="row">
+                            <div class="col-xs-7">
+                                {{ field }}
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="col-xs-5">
+                                <input id="btnSms" type="button" class="btn btn-default" value="点击获取验证码">
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        <span class="error-msg"></span>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <div class="row">
+                <div class="col-xs-3">
+                    <input id="btnSubmit" type="button" class="btn btn-primary" value="注册"/>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(function () {
+            bindClickBtnSms();
+            bindClickSubmit();
+        });
+
+        function bindClickBtnSms() {
+            $('#btnSms').click(function () {
+                $('.error-msg').empty();
+                // 获取用户输入的手机号：输入框由form生成，id默认形式为 id_(字段名)
+                var mobilePhone = $('#id_mobile_phone').val();
+                // Ajax请求将手机号、tpl值发送后台准备校验
+                $.ajax({
+                    url: "{% url 'send_sms' %}",
+                    type: 'GET',
+                    data: {mobile_phone: mobilePhone, tpl: 'register'},
+                    dataType: 'JSON',
+                    success: function (res) {
+                        if (res.status) {
+                            // 向'send_sms'提交了数据，且提交的数据通过了form验证
+                            // 开始倒计时
+                            sendSmsRemind();
+                        } else {
+                            {#console.log(res);#}
+                            $.each(res.error, function (key, value) {
+                                $('#id_' + key).next().text(value[0]);
+                            })
+                        }
+                    },
+                })
+            })
+        }
+
+        function sendSmsRemind() {
+            var $smsBtn = $('#btnSms');
+            $smsBtn.prop('disabled', true);
+            var time = 60;
+            var remind = setInterval(function () {
+                $smsBtn.val(time + '秒后重新获取');
+                time -= 1;
+                if (time < 1) {
+                    clearInterval(remind);
+                    $smsBtn.val('点击获取验证码').prop('disabled', false);
+                }
+            }, 1000)
+        }
+
+        function bindClickSubmit() {
+            $('#btnSubmit').click(function () {
+                $('.error-msg').empty();
+                $.ajax({
+                    url: "{% url 'register' %}",
+                    type: "POST",
+                    data: $('#regForm').serialize(),
+                    dataType: 'JSON',
+                    success: function (res) {
+                        if (res.status) {
+                            console.log(res);
+                            // form表单中的数据都校验通过了
+                            // 直接让前端跳转到指定的URL去
+                            location.href = res.go_url;
+                        } else {
+                            console.log(res);
+                            $.each(res.error, function (key, value) {
+                                $('#id_' + key).next().text(value[0]);
+                            });
+                        }
+                    },
+                });
+            })
+        }
+    </script>
+{% endblock %}
